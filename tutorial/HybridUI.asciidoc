@@ -106,14 +106,37 @@ Windows (XP, Vista, 7), Mac OS X (10.5.8 or later), Linux (with GNU C Library - 
 later, 64-bit distributions having installed the libraries for running 32-bit applications).
 =====================================================================================
 
+Installing the Android Development Tools (ADT) plugin in JBDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before we create an Android project in JBDS, we need to install the Android Development Tools (ADT) plugin.
+
+The prerequisites for that are having the Android SDK installed locally.
+
+Download the Android SDK tools from 'http://developer.android.com/sdk/index.html' and unzip it in a directory of your choice, remembering its location.
+
+[TIP]
+.Should we download the ADT bundle or the SDK Tools?
+================================================================================================================
+The Android Developers site offers an ADT Bundle distribution as well as a SDK Tools (only) download. The ADT 
+bundle provided at the Android Developers site packages an Eclipse distribution, the ADT plugin, the SDK tools 
+among other components.
+
+When we're installing the ADT plugin into an existing Eclipse installation (i.e. JBDS 6), the SDK tools 
+component is sufficient. The other required components like the Android SDKs can be downloaded through the SDK 
+Manager provided in the Android SDK Tools.
+================================================================================================================
+
+To install the ADT plugin in JBDS, select _Help -> JBoss Central_ from the menu and switch to the _Software/Update tab_.
+
+Select the *Android Development Tools* option, and choose to install it.
+
+Restart JBDS when prompted.
+
+To configure the ADT plugin, select _Window -> Preferences -> Android_ . Enter the location of the Android SDK (that was previously extracted) in the 'SDK Location' field. This would be automatically filled if the SDK location was detected by ADT.
+
 Creating an Android project using Apache Cordova
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-First, we will create an Android project in JBDS. The prerequisites for that are having the Android SDK installed locally , as well as the Android (ADT) plugin for Eclipse installed in JBDS.
-
-For the former, download the Android SDK from 'http://developer.android.com/sdk/index.html' and unzip it in a directory of your choice, remembering its location.
-
-For the latter, select _Help -> Install New Software_ from the menu, using the URL `https://dl-ssl.google.com/android/eclipse/` and selecting the *Developer Tools* option. Restart Eclipse.
 
 Now we can create a new Android project.
 
@@ -277,7 +300,7 @@ Note how we customize the user agent information for the wrapped browser. This w
 Adding Apache Cordova to TicketMonster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, we will copy the Apache Cordova JavaScript library to the project. From the directory where you unzipped the distribution, copy the `lib\android\cordova-2.0.0.js` file to the `src/main/webapp/resources/js/libs' folder, renaming it to `cordova-android-2.1.0.js`, to avoid naming conflicts with other platforms (such as iOS which we will also implement as part of this tutorial).
+First, we will copy the Apache Cordova JavaScript library to the project. From the directory where you unzipped the distribution, copy the `lib\android\cordova-2.0.0.js` file to the `src/main/webapp/resources/js/libs' folder, renaming it to `cordova-android-2.0.0.js`, to avoid naming conflicts with other platforms (such as iOS which we will also implement as part of this tutorial).
 
 Next, we need to load the library in the application. We will create a separate module, that will load the rest of the mobile application, as well as the Apache Cordova JavaScript library for Android. We also need to configure a base URL for the application. For this example, we will use the URL of the cloud deployment of TicketMonster.
 
@@ -296,7 +319,7 @@ require (["resources/js/libs/cordova-android-2.0.0.js","mobile"], function() {
 });
 -------------------------------------------------------------------------------------------------------
 
-The final step will involve adjusting `src/main/webapp/index.html` to loead this module when running on Android, using the user agent setting we have already configured in the project.
+The final step will involve adjusting `src/main/webapp/index.html` to load this module when running on Android, using the user agent setting we have already configured in the project.
 
 .src/main/webapp/index.html
 [source,html]
