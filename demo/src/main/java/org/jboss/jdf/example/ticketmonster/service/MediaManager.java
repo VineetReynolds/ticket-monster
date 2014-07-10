@@ -179,7 +179,50 @@ public class MediaManager {
                 InputStream is = null;
                 OutputStream os = null;
                 try {
-                    is = new BufferedInputStream(_url.openStream());
+                    boolean shouldRedirect = false;
+                    int redirects = 0;
+                    InputStream in = null;
+                    URLConnection urlConn = _url.openConnection();
+                    do {
+                        if (urlConn instanceof HttpURLConnection)
+                        {
+                            ((HttpURLConnection) urlConn).setInstanceFollowRedirects(false);
+                        }
+
+                        in = urlConn.getInputStream();
+                        shouldRedirect = false;
+                        if (urlConn instanceof HttpURLConnection)
+                        {
+                            HttpURLConnection http = (HttpURLConnection) urlConn;
+                            int stat = http.getResponseCode();
+                            if (stat >= 300 && stat <= 307 && stat != 306 &&
+                                    stat != HttpURLConnection.HTTP_NOT_MODIFIED)
+                            {
+                                URL base = http.getURL();
+                                String loc = http.getHeaderField("Location");
+                                URL target = null;
+                                if (loc != null)
+                                {
+                                    target = new URL(base, loc);
+                                }
+                                // Close the existing connection to prevent leaks
+                                http.disconnect();
+                                // Redirection should be allowed only for HTTP and HTTPS
+                                // and should be limited to 5 redirections at most.
+                                if (target == null || !(target.getProtocol().equals("http")
+                                        || target.getProtocol().equals("https"))
+                                        || redirects >= 5)
+                                {
+                                    throw new SecurityException("illegal URL redirect");
+                                }
+                                shouldRedirect = true;
+                                urlConn = target.openConnection();
+                                redirects++;
+                            }
+                        }
+
+                    } while (shouldRedirect);
+                    is = new BufferedInputStream(in);
                     os = new BufferedOutputStream(getCachedOutputStream(cachedFileName));
                     while (true) {
                         int data = is.read();
