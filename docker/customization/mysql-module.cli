@@ -1,0 +1,6 @@
+batch
+module add --name=com.mysql --resources=/usr/share/java/mysql-connector-java.jar --dependencies=javax.api,javax.transaction.api
+/subsystem=datasources/jdbc-driver=mysql:add(driver-module-name=com.mysql,driver-name=mysql,driver-class-name=com.mysql.jdbc.Driver)
+/subsystem=datasources/data-source=TicketMonsterMySQLDS:add(jndi-name=java:jboss/datasources/TicketMonsterMySQLDS, driver-name=mysql, connection-url=jdbc:mysql://${env.DB_PORT_3306_TCP_ADDR}:${DB_PORT_3306_TCP_PORT}/mysql,user-name=root,password=${env.DB_ENV_MYSQL_ROOT_PASSWORD})
+data-source enable --name=TicketMonsterMySQLDS
+run-batch
