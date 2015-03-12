@@ -22,11 +22,11 @@ $JBOSS_HOME/start.sh > /dev/null &
 echo "=> Waiting for the server to boot"
 wait_for_server
 
-echo "=> Executing the commands"
-DB_PORT_3306_TCP_ADDR=
-DB_PORT_3306_TCP_PORT=
-DB_ENV_MYSQL_ROOT_PASSWORD=
+echo "=> Creating the MySQL datasource"
 $JBOSS_CLI --controller=$IPADDR:9999 -c --file=`dirname "$0"`/mysql-module.cli
+
+echo "=> Enabling the MySQL datasource"
+xmlstarlet ed -L -u "//*[local-name()='datasource' and @jndi-name='java:jboss/datasources/TicketMonsterMySQLDS']/@enabled" -v "true" /opt/jboss/jboss-eap/standalone/configuration/$JBOSS_CONFIG
 
 echo "=> Shutting down JBoss EAP"
 if [ "$JBOSS_MODE" = "standalone" ]; then
