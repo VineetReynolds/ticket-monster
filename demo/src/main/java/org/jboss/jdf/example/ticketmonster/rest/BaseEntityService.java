@@ -66,7 +66,7 @@ import javax.ws.rs.core.UriInfo;
 
  * @author Marius Bogoevici
  */
-public abstract class BaseEntityService<T> {
+public abstract class BaseEntityService<T> implements RestfulEntityService<T> {
 
     @Inject
     private EntityManager entityManager;
@@ -92,12 +92,14 @@ public abstract class BaseEntityService<T> {
      * @param uriInfo application and request context information (see {@see UriInfo} class information for more details)
      * @return
      */
+    @Override
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<T> getAll(@Context UriInfo uriInfo) {
         return getAll(uriInfo.getQueryParameters());
     }
     
+    @Override
     public List<T> getAll(MultivaluedMap<String, String> queryParameters) {
         final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         final CriteriaQuery<T> criteriaQuery = criteriaBuilder.createQuery(entityClass);
@@ -125,6 +127,7 @@ public abstract class BaseEntityService<T> {
      * @param uriInfo application and request context information (see {@see UriInfo} class information for more details)
      * @return
      */
+    @Override
     @GET
     @Path("/count")
     @Produces(MediaType.APPLICATION_JSON)
@@ -161,6 +164,7 @@ public abstract class BaseEntityService<T> {
      * @param id entity id
      * @return
      */
+    @Override
     @GET
     @Path("/{id:[0-9][0-9]*}")
     @Produces(MediaType.APPLICATION_JSON)
