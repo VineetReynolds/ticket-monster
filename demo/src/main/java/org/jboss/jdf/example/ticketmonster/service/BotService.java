@@ -51,17 +51,19 @@ public class BotService {
     }
 
     public void start() {
+        changeBotState();
+    }
+
+    public void stop() {
+        changeBotState();
+    }
+
+    private void changeBotState() {
         synchronized (bot) {
             if (timer == null) {
                 logger.info("Starting bot");
                 timer = bot.start();
-            }
-        }
-    }
-
-    public void stop() {
-        synchronized (bot) {
-            if (timer != null) {
+            } else {
                 logger.info("Stopping bot");
                 bot.stop(timer);
                 timer = null;
