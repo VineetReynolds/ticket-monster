@@ -21,13 +21,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.jboss.jdf.example.ticketmonster.model.Booking;
-import org.jboss.jdf.example.ticketmonster.model.Performance;
-import org.jboss.jdf.example.ticketmonster.model.Seat;
-import org.jboss.jdf.example.ticketmonster.model.Section;
-import org.jboss.jdf.example.ticketmonster.model.Ticket;
-import org.jboss.jdf.example.ticketmonster.model.TicketCategory;
-import org.jboss.jdf.example.ticketmonster.model.TicketPrice;
+import org.jboss.jdf.example.ticketmonster.model.*;
 import org.jboss.jdf.example.ticketmonster.service.AllocatedSeats;
 import org.jboss.jdf.example.ticketmonster.service.SeatAllocationService;
 import org.jboss.jdf.example.ticketmonster.util.MultivaluedHashMap;
@@ -133,12 +127,15 @@ public class BookingService extends BaseEntityService<Booking> {
             // id
             Map<Long, TicketPrice> ticketPricesById = loadTicketPrices(priceCategoryIds);
 
+            MailCarrier defaultCarrier = loadDefaultCarrier();
+
             // Now, start to create the booking from the posted data
             // Set the simple stuff first!
             Booking booking = new Booking();
             booking.setContactEmail(bookingRequest.getEmail());
             booking.setPerformance(performance);
             booking.setCancellationCode("abc");
+            booking.setCarrier(defaultCarrier);
 
             // Now, we iterate over each ticket that was requested, and organize them by section and category
             // we want to allocate ticket requests that belong to the same section contiguously
@@ -227,6 +224,11 @@ public class BookingService extends BaseEntityService<Booking> {
             // Throwing the exception causes an automatic rollback
             throw new RestServiceException(Response.status(Response.Status.BAD_REQUEST).entity(errors).build());
         }
+    }
+
+    private MailCarrier loadDefaultCarrier() {
+        MailCarrier carrier = getEntityManager().find(MailCarrier.class, 1L);
+        return carrier;
     }
 
     /**

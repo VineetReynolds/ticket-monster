@@ -122,6 +122,9 @@ public class Booking implements Serializable {
     @Email(message = "Not a valid email format")
     private String contactEmail;
 
+    @ManyToOne
+    private MailCarrier carrier;
+
     /**
      * Compute the total price of all tickets in this booking.
      */
@@ -177,6 +180,14 @@ public class Booking implements Serializable {
 
     public void setPerformance(Performance performance) {
         this.performance = performance;
+    }
+
+    public MailCarrier getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(MailCarrier carrier) {
+        this.carrier = carrier;
     }
 
     /* equals() and hashCode() for Booking, using the synthetic identity of the object */
