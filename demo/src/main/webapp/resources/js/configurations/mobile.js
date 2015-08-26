@@ -14,7 +14,7 @@ require.config({
         angularRoute: 'libs/angular-route',
         angularResource: 'libs/angular-resource',
         angularTouch: 'libs/angular-touch',
-        router: 'app/aggregator/mobile'
+        aggregator: 'app/aggregator/mobile'
     },
     // We shim Angular and Underscore.js since they don't declare AMD modules
     shim: {
@@ -54,11 +54,11 @@ define("configuration", function() {
 });
 
 // Now we declare all the dependencies
-// This loads and runs the 'initializer' and 'router' modules.
+// This loads and runs the 'initializer' and 'aggregator' modules.
 require([
         'jquery',
         'angular',
-        'router'
+        'aggregator'
     ], function($, angular, app) {
         // Configure jQuery to append timestamps to requests, to bypass browser caches
         // Important for MSIE

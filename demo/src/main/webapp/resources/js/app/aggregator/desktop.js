@@ -1,16 +1,17 @@
 'use strict';
 
 /**
- * A module for the router of the desktop application
+ * The main module for the desktop application.
+ * Pulls in other modules.
  */
-define("router", [
+define("aggregator", [
     'angular',
     'angularRoute',
     'angularResource',
     'app/home/view',
     'app/events/eventsView',
-    'app/venues/venuesView',
     'app/eventDetail/eventDetailView',
+    'app/venues/venuesView',
     'app/venueDetail/venueDetailView',
     'app/booking/view',
     'app/monitor/monitor'
@@ -21,8 +22,8 @@ define("router", [
         'ticketMonster.api',
         'ticketMonster.homeView',
         'ticketMonster.eventsView',
-        'ticketMonster.venuesView',
         'ticketMonster.eventDetailView',
+        'ticketMonster.venuesView',
         'ticketMonster.venueDetailView',
         'ticketMonster.bookingView',
         'ticketMonster.monitorView'])

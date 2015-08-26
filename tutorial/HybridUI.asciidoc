@@ -59,29 +59,31 @@ property.
 
 All our code that performs REST services invocations depends on this module, thus the base REST URL can be configured in a single place and injected throughout the code, as in the following code example:
 
-.src/main/webapp/resources/js/app/models/event.js
+.src/main/webapp/resources/js/app/api/services.js
 [source,javascript]
 -------------------------------------------------------------------------------------------------------
-/**
- * Module for the Event model
- */
-define([ 
+'use strict';
+define([
+    'angular',
+    'underscore',
     'configuration',
-    'backbone'
-], function (config) {
-    /**
-     * The Event model class definition
-     * Used for CRUD operations against individual events
-     */
-    var Event = Backbone.Model.extend({
-        urlRoot: config.baseUrl + 'rest/events' // the URL for performing CRUD operations
-    });
-    // export the Event class
-    return Event;
+    'angularResource'
+], function (angular, _, config) {
+    angular.module('ticketMonster.api', ['ngResource'])
+        .factory('EventResource', function ($resource) {
+            var resource = $resource(config.baseUrl + 'rest/events/:eventId', {eventId: '@id'}, {
+                'queryAll': {
+                    method: 'GET',
+                    isArray: true
+                }, 'query': {method: 'GET', isArray: false}, 'update': {method: 'PUT'}
+            });
+            return resource;
+        })
+		...
 });
 -------------------------------------------------------------------------------------------------------
 
-The prefix is used in a similar fashion by all the other modules that perform REST service invocations. You don't need to do anything right now, because the code we created in the user front end tutorial was written like this originally. Be warned, if you have a mobile web application that uses any relative URLs, you will need to refactor them to include some form of URL configuration. 
+The prefix is used in a similar fashion by all the other factories that perform REST service invocations. You don't need to do anything right now, because the code we created in the user front end tutorial was written like this originally. Be warned, if you have a mobile web application that uses any relative URLs, you will need to refactor them to include some form of URL configuration.
 
 == Install Hybrid Mobile Tools and CordovaSim
 
@@ -290,7 +292,7 @@ require(['../../../cordova'], function() {
                 parseFloat(window.device.version) >= 7.0) {
                 StatusBar.overlaysWebView(false);
                 StatusBar.styleDefault();
-                StatusBar.backgroundColorByHexString("#e9e9e9");
+                StatusBar.backgroundColorByHexString("#ccc");
             }
             // Load the mobile module
             require (["mobile"]);
@@ -340,7 +342,7 @@ define(function () {
 
 In the above code snippet, we detect if the URL of the page contains `mobileapp.html` or not, and then proceed to activate the `hybrid` module if so. Since Apache Cordova is configured to use `mobileapp.html` as the application start page, the desired objective is achieved. This way, we avoid loading the `mobile` or `desktop` modules that do not have any logic in them to detect the `deviceready` event of Cordova.
 
-The final step will involve adjusting `src/main/webapp/resources/js/configurations/loader.js` to load this module when running on Android, using the query string we have already configured in the project. We'll also tweak `src/main/webapp/resources/js/app/utilities.js` to use the Notification plugin to display alerts in the context of a Hybrid Mobile app.
+The final step will involve adjusting `src/main/webapp/resources/js/configurations/loader.js` to load this module when running on Android, using the query string we have already configured in the project.
 
 .src/main/webapp/resources/js/configurations/loader.js
 [source,javascript]
@@ -369,31 +371,6 @@ define(function () {
     require([environment]);
 });
 -------------------------------------------------------------------------------------------------------
-
-We'll now examine the `displayAlert` function in the utilities object. It is set to use the Notification plugin when available:
-
-.src/main/webapp/resources/js/app/utilities.js
-[source,javascript]
--------------------------------------------------------------------------------------------------------
-...
-    // utility functions for rendering templates
-    var utilities = {
-        ...
-        applyTemplate:function (target, template, data) {
-            return target.empty().append(this.renderTemplate(template, data));
-        },
-        displayAlert: function(msg) {
-            if(navigator.notification) {
-                navigator.notification.alert(msg);
-            } else {
-                alert(msg);
-            }
-        }
-    };
-...
--------------------------------------------------------------------------------------------------------
-
-The function automatically works in non-mobile environments due to the absence of the `navigator.notification` object in such environments.
 
 == Run the hybrid mobile application
 

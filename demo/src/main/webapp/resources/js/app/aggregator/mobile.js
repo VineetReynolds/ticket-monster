@@ -1,9 +1,10 @@
 'use strict';
 
 /**
- * A module for the router of the desktop application
+ * The main module for the mobile application.
+ * Pulls in other modules.
  */
-define("router", [
+define("aggregator", [
     'angular',
     'angularRoute',
     'angularResource',

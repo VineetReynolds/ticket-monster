@@ -1,0 +1,300 @@
+[[DeployingToDocker]]
+= Appendix B - Deploying to Docker
+:Author: Vineet Reynolds
+
+== What Will You Learn Here?
+
+This appendix demonstrates how to import, develop and deploy the TicketMonster example using JBoss Developer Studio:
+
+* Obtain and import the TicketMonster example source code
+* Deploy the application to Docker
+
+== Import the Project source code
+
+Once the TicketMonster source code is obtained and unpackaged, you must import it into JBoss
+Developer Studio, as detailed in the procedure below. TicketMonster is a Maven-based project so a
+specific Import Maven Project wizard is used for the import.
+
+. Click *File*→*Import* to open the *Import* wizard.
+. Expand *Maven*, select *Existing Maven Projects* and click *Next*.
+. In the *Root Directory* field, enter the path to the TicketMonster source code. Alternatively,
+click *Browse* to navigate to the source code location. The *Import Maven Project* wizard
+recursively searches the path for a *pom.xml* file. The *pom.xml* file identifies the project as a
+Maven project. The file is listed under *Projects* once it is found.
++
+.pom.xml File Listed in the Projects Pane
+image::gfx/pom-file-projects-pane.png[]
+. Click *Finish*. When the import process is complete, the project is listed in the *Project Explorer* view.
+
+
+== Pre-requisites
+
+On Linux distributions, the Docker package should be installed. Docker Toolbox will be required on Windows and Mac OSX. Using Docker Toolbox, one can manage a Docker environment on Windows and Mac OSX installations.
+
+== Creating a Docker image
+
+To deploy TicketMonster as a Docker image, one must first create a Docker image using a `Dockerfile`:
+
+.docker/Dockerfile
+[source,text]
+-------------------------------------------------------------------------------------------------------
+# Use the JDK 8 image as the base
+FROM jboss/base-jdk:8
+
+MAINTAINER vpereira@redhat.com
+
+# Install JBoss EAP
+ENV EAP_VERSION 7.0.0
+ENV EAP_MINOR_VERSION 7.0
+
+# Add the JBoss EAP distribution to /opt, and make jboss the owner of the extracted tar content
+# Remember to fetch and place the jboss eap distribution in the same directory as the docker file.
+ADD ./jboss-eap-$EAP_VERSION.zip /opt/jboss/
+USER root
+RUN chown jboss /opt/jboss/jboss-eap-$EAP_VERSION.zip
+USER jboss
+WORKDIR /opt/jboss
+RUN unzip jboss-eap-$EAP_VERSION.zip && mv jboss-eap-$EAP_MINOR_VERSION jboss-eap && rm jboss-eap-$EAP_VERSION.zip
+
+# Set the JBOSS_HOME env variable
+ENV JBOSS_HOME /opt/jboss/jboss-eap
+
+# Expose the ports we're interested in
+EXPOSE 8080 9990
+
+# Add the TicketMonster WAR to the deployments directory of JBoss EAP.
+# Remember to place the TicketMonster WAR into the root directory before running the Docker build
+# You can build it and place it in the root dir, using:
+# mvn -f demo clean package && cp demo/target/ticket-monster.war .
+ADD ./ticket-monster.war /opt/jboss/jboss-eap/standalone/deployments/
+
+# Set the default command to run on boot
+# This will boot JBoss EAP in the standalone mode and bind to all interfaces
+CMD ["/opt/jboss/jboss-eap/bin/standalone.sh", "-b", "0.0.0.0"]
+-------------------------------------------------------------------------------------------------------
+
+Before building the image, we'll create the TicketMonster WAR file, and place it in the `docker` directory, using the following commands:
+
+----
+cd demo
+mvn clean package
+cp target/ticket-monster.war ../docker/
+----
+
+Copy or download the JBoss EAP ZIP distribution and place it in the `docker` directory.
+
+----
+cp <JBOSS_EAP_ZIP_FILE> ../docker/
+----
+
+Finally, build the Docker image, in the `docker` directory. This could be performed from the command-line or from JBoss Developer Studio.
+
+=== Building the Docker image from the command line
+
+To build the image from the command-line, run the `docker build` command in the `docker` directory of the project:
+
+----
+cd ../docker
+docker build -t ticketmonster .
+----
+
+You should see output similar to the following:
+
+----
+Sending build context to Docker daemon 166.7 MB
+Step 0 : FROM jboss/base-jdk:8
+ ---> 77c58da5314d
+Step 1 : MAINTAINER vpereira@redhat.com
+ ---> Using cache
+ ---> b2f78aa06cc4
+Step 2 : ENV EAP_VERSION 7.0.0
+ ---> Using cache
+ ---> 81fc7248b086
+Step 3 : ENV EAP_MINOR_VERSION 7.0
+ ---> Using cache
+ ---> 1820925528ea
+Step 4 : ADD ./jboss-eap-$EAP_VERSION.zip /opt/jboss/
+ ---> Using cache
+ ---> 270c1572e589
+Step 5 : USER root
+ ---> Using cache
+ ---> 857afd00c0c3
+Step 6 : RUN chown jboss /opt/jboss/jboss-eap-$EAP_VERSION.zip
+ ---> Using cache
+ ---> 14ba9554e712
+Step 7 : USER jboss
+ ---> Using cache
+ ---> 347c5db8b7c1
+Step 8 : WORKDIR /opt/jboss
+ ---> Using cache
+ ---> 63f9eb561391
+Step 9 : RUN unzip jboss-eap-$EAP_VERSION.zip && mv jboss-eap-$EAP_MINOR_VERSION jboss-eap && rm jboss-eap-$EAP_VERSION.zip
+ ---> Using cache
+ ---> 2679340ea70c
+Step 10 : ENV JBOSS_HOME /opt/jboss/jboss-eap
+ ---> Using cache
+ ---> 41ac8241f8d8
+Step 11 : EXPOSE 8080 9990
+ ---> Using cache
+ ---> a09095917fba
+Step 12 : ADD ./ticket-monster.war /opt/jboss/jboss-eap/standalone/deployments/
+ ---> Using cache
+ ---> 48e78417960e
+Step 13 : CMD /opt/jboss/jboss-eap/bin/standalone.sh -b 0.0.0.0
+ ---> Using cache
+ ---> 3259d6a468fd
+Successfully built 3259d6a468fd
+----
+
+On running the `docker images` command, the newly created image should be listed:
+
+----
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+ticketmonster       latest              3259d6a468fd        21 minutes ago      914.5 MB
+jboss/base-jdk      8                   77c58da5314d        2 weeks ago         425.4 MB
+----
+
+=== Building the Docker image in JBoss Developer Studio
+
+You can also build the Docker image in JBoss Developer Studio. If you've followed the steps to 
+* build the TicketMonster WAR and place it in the `docker` directory,
+* place the JBoss EAP ZIP distribution in the `docker` directory,
+you can now build the image using the `Dockerfile` created in the previous section.
+
+We need to set up a connection to a Docker daemon first:
+
+* Open the *Docker Tooling* perspective and go to the *Docker Explorer* tab.
+* Click the *Add Connection* button or the link in the *Docker Explorer* tab, to open the dialog to create a new connection.
++
+.Click the link or the Add Connection button
+image::gfx/docker-explorer.png[]
+* Select the checkbox to customize connection details.
++
+.The Docker connection dialog
+image::gfx/docker-connection-dialog.png[]
+* For Linux users that have a local daemon running, specify the Unix socket: `unix:///var/run/docker.sock`
+* On Mac or Windows systems, a TCP address will be required. If you are using Boot2Docker or Docker Machine, specify the TCP address provided by the `DOCKER_HOST` environment variable, or the output of the `docker-machine ls` or `boot2docker ip` command. Authentication may be required - specify the location of the certificate path created by Docker Machine or Boot2Docker.
++
+.Customize connection details for Docker Machine
+image::gfx/customize-docker-connection-details.png[]
+
+Now, we're ready to build an image:
+
+* Open the *Docker Images* tab
+* Click the *Build Image* button to open the dialog to build Docker images from a `Dockerfile`
+* Provide a name for the image - `ticketmonster`
+* Specify the directory where the `Dockerfile` is present - this would be the `docker` directory of the TicketMonster project
++
+.Specify the arguments to build a Docker image
+image::gfx/build-image.png[]
+* Click the *Finish* button to commence building the image
+
+The created image should now be visible in the *Docker Images* tab.
+
+.The newly created Docker image is visible
+image::gfx/docker-finished-build.png[]
+
+The image can now be run as a Docker container.
+
+== Running the Docker image as a container
+
+The image can be run as a Docker container either via the command line, or via the Docker tooling in JBoss Developer Studio.
+
+=== Running the image from the command line
+
+To start a container via the command-line, run the following command:
+
+----
+docker run -p 8080:8080 -p 9990:9990 -d ticketmonster
+----
+
+This starts a new container using the `ticketmonster` image we previously created:
+
+----
+bash-3.2$ docker run -p 8080:8080 -p 9990:9990 -d ticketmonster
+180ec7aad61dca04455d5dd8c95768f79a3cfc84b2704e574ddd04dcd2acff3e
+----
+
+The above command also instructs Docker to publish the exposed ports onto the Docker host.
+
+To view, the status of the container, run:
+
+----
+docker ps
+----
+
+This would produce output like the following:
+
+----
+bash-3.2$ docker ps
+CONTAINER ID        IMAGE                  COMMAND                CREATED             STATUS              PORTS                                            NAMES
+b698f2da16c3        ticketmonster:latest   "/opt/jboss/jboss-ea   52 seconds ago      Up 51 seconds       0.0.0.0:8080->8080/tcp, 0.0.0.0:9990->9990/tcp   jolly_brattain
+----
+
+One can view the logs of the container by running the following command:
+
+----
+docker logs b698f2da16c3
+----
+
+Remember to replace the container ID (`b698f2da16c3`) in the above command, with the actual container ID of the running container in your environment.
+
+The logs should indicate that JBoss EAP has been started in the container, the TicketMonster application has been deployed and is awaiting requests.
+
+=== Running the image from JBoss Developer Studio
+
+To start the container in JBoss Developer Studio, open the *Docker Tooling* perspective.
+
+Go to the *Docker Images* tab, select the `ticketmonster` image, and click the *Run Image* button to create a container based on the selected image.
+
+In the presented dialog box, unselect the option to `Publish all exposed ports to random ports on the host interface`. Edit the container port entries to expose the container ports 8080 and 9990 on the host ports 8080 and 9990.
+
+.Run the TicketMonster docker image
+image::gfx/run-docker-image.png[]
+
+Click the `Finish` button. The container should now be started, and the `Console` view should be populated with ouput from the application.
+
+.The JBoss logs as visible in the Console tab
+image::gfx/docker-console.png[]
+
+== Accessing the application
+
+=== Forwarding ports in Boot2Docker or Docker Machine
+
+If you are using *Boot2Docker* or *Docker Machine* to run Docker containers, you will need to enable port forwarding on the underlying VirtualBox VM hosting Docker. That's because the exposed ports on the Docker container are published to the host ports in the Boot2Docker VM. The application deployed in the JBoss container is accessible only in the Docker VM. To access it from the machine running the VM, the traffic needs to be forwarded from the VM host to the VM.
+
+To do, run the following commands, if the underlying VirtualBox VM has been started:
+
+----
+VBoxManage controlvm boot2docker-vm natpf1 "tcp-port8080,tcp,,8080,,8080";
+VBoxManage controlvm boot2docker-vm natpf1 "tcp-port9990,tcp,,9990,,9990";
+----
+
+If the VM is shutdown, run the following command:
+
+----
+VBoxManage modifyvm boot2docker-vm --natpf1 "tcp-port8080,tcp,,8080,,8080";
+VBoxManage modifyvm boot2docker-vm --natpf1 "tcp-port9990,tcp,,9990,,9990";
+----
+
+Or, enable port-forwarding in the VM via the VirtualBox GUI:
+
+* Select the `boot2docker-vm` in VirtualBox.
+* Click the *Settings* button to open the settings for the VM.
+* Open the *Network* settings tab.
+* Choose the adapter that is attached to NAT. This is often the first adapter.
++
+.Network Settings of the VM
+image::gfx/virtualbox-network-settings.png[]
+* Open the *Port Forwarding* options.
+* Add entries for the exposed ports on the Docker host. Click *Ok* to save the entries.
++
+.Add ports 8080 and 9990 to be forwarded
+image::gfx/virtualbox-port-forwarding.png[]
+* Click *Ok* to save the modified settings. These changes will be persisted across multiple runs of the VM, and thus, can be applied just once. If you recreate the VM, you will need to reapply the configuration.
+
+By establishing these rules, VirtualBox establishes listeners and forwards traffic on the 8080 and 9990 ports on the VM host, to the Boot2Docker VM, which in turn forwards traffic to the 8080 and 9990 ports in the Docker container.
+
+=== Accessing the application
+
+Once the container is started, and the ports have been forwarded if required, one can access the application just as if it were running on a local application server process. Once can see the application running at http://localhost:8080/ticket-monster.

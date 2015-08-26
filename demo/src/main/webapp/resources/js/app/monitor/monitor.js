@@ -15,23 +15,21 @@ define([
                 controller: 'MonitorController'
             });
         }])
-        .controller('MonitorController', ['$scope', '$http', '$timeout', 'EventResource', function($scope, $http, $timeout, EventResource) {
-
+        .factory("Bot", ['$http', function($http) {
             /**
              * The Bot model class definition
              * Used perform operations on the Bot.
-             * Note that this is not a Backbone model.
              */
-            var Bot = function() {
-                this.statusUrl = config.baseUrl + 'rest/bot/status';
-                this.messagesUrl = config.baseUrl + 'rest/bot/messages';
+            var bot = {
+                statusUrl : config.baseUrl + 'rest/bot/status',
+                messagesUrl : config.baseUrl + 'rest/bot/messages'
             };
 
             /*
              * Start the Bot by sending a request to the Bot resource
              * with the new status of the Bot set to "RUNNING".
              */
-            Bot.prototype.start = function() {
+            bot.start = function() {
                 $http({
                     method: "PUT",
                     url: this.statusUrl,
@@ -44,7 +42,7 @@ define([
              * Stop the Bot by sending a request to the Bot resource
              * with the new status of the Bot set to "NOT_RUNNING".
              */
-            Bot.prototype.stop = function() {
+            bot.stop = function() {
                 $http({
                     method: "PUT",
                     url: this.statusUrl,
@@ -57,7 +55,7 @@ define([
              * Stop the Bot and delete all bookings by sending a request to the Bot resource
              * with the new status of the Bot set to "RESET".
              */
-            Bot.prototype.reset = function() {
+            bot.reset = function() {
                 $http({
                     method: "PUT",
                     url: this.statusUrl,
@@ -70,7 +68,7 @@ define([
              * Fetch the log messages of the Bot and invoke the callback.
              * The callback is provided with the log messages (an array of Strings).
              */
-            Bot.prototype.fetchMessages = function(callback) {
+            bot.fetchMessages = function(callback) {
                 $http.get(this.messagesUrl)
                     .then(function(data) {
                         if(callback) {
@@ -79,6 +77,10 @@ define([
                     });
             };
 
+            return bot;
+        }])
+        .controller('MonitorController', ['$scope', '$http', '$timeout', 'Bot', function($scope, $http, $timeout, Bot) {
+
             var fetchMetrics = function() {
                 $http.get(config.baseUrl + "rest/metrics")
                     .then(function(response){
@@ -86,11 +88,10 @@ define([
                     });
             };
 
-            var bot = new Bot();
             var timer = null;
             var poll = function() {
                 fetchMetrics();
-                bot.fetchMessages(function(response) {
+                Bot.fetchMessages(function(response) {
                     $scope.messages = response.data.reverse().join("");
                 });
                 timer = $timeout(poll, 3000);
@@ -98,13 +99,13 @@ define([
             timer = $timeout(poll, 0);
 
             $scope.startBot = function () {
-                bot.start()
+                Bot.start()
             };
             $scope.stopBot = function () {
-                bot.stop()
+                Bot.stop()
             };
             $scope.resetBot = function () {
-                bot.reset()
+                Bot.reset()
             };
 
             $scope.$on("$destroy", function() {

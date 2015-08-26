@@ -51,7 +51,7 @@ discover how CDI, EJB and JAX-RS make it easy to define and wire together our se
 === Adding Jackson Core
 
 
-The first step for setting up our service architecture is to add Jackson Core as a dependency in the project. Adding Jackson Core as a provided dependency will enable you to use the Jackson annotations in the project. This is necessary to obtain a certain degree of control over the content of the JSON responses. We can bring in the same version of Jackson Core as the one used in RESTEasy, by adding `org.jboss.resteasy:resteasy-jackson-provider` and `org.jboss.resteasy:resteasy-jaxrs` as provided-scope dependencies, through the `org.jboss.bom.eap:jboss-javaee-6.0-with-resteasy` BOM. The versions of these dependencies would depend on the version of the JBoss BOMs we use in our project. Using the same version of the JBoss BOM as the one we will deploy to production, will ensure that we use the right dependencies during compilation and build.
+The first step for setting up our service architecture is to add Jackson Core as a dependency in the project. Adding Jackson Core as a provided dependency will enable you to use the Jackson annotations in the project. This is necessary to obtain a certain degree of control over the content of the JSON responses. We can bring in the same version of Jackson Core as the one used in RESTEasy, by adding `org.jboss.resteasy:resteasy-jackson2-provider` and `org.jboss.resteasy:resteasy-jaxrs` as provided-scope dependencies, through the `org.jboss.bom:jboss-javaee-7.0-eap-with-tools` BOM. The versions of these dependencies would depend on the version of the JBoss BOMs we use in our project. Using the same version of the JBoss BOM as the one we will deploy to production, will ensure that we use the right dependencies during compilation and build.
 
 .pom.xml
 [source,xml]
@@ -63,8 +63,8 @@ The first step for setting up our service architecture is to add Jackson Core as
         ...
 
         <dependency>
-            <groupId>org.jboss.bom.eap</groupId>
-            <artifactId>jboss-javaee-6.0-with-resteasy</artifactId>
+            <groupId>org.jboss.bom</groupId>
+            <artifactId>jboss-javaee-7.0-eap-with-tools</artifactId>
             <version>${version.jboss.bom.eap}</version>
             <type>pom</type>
             <scope>import</scope>
@@ -79,7 +79,7 @@ The first step for setting up our service architecture is to add Jackson Core as
             fine tuning the content of the JSON responses -->
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jackson-provider</artifactId>
+            <artifactId>resteasy-jackson2-provider</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -543,12 +543,12 @@ We shall ensure that the required dependencies are present in the project POM, t
         ...
         <dependency>
             <groupId>org.jboss.spec.javax.ws.rs</groupId>
-            <artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
+            <artifactId>jboss-jaxrs-api_2.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+            <artifactId>jboss-servlet-api_3.1_spec</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -1240,33 +1240,13 @@ http://arquillian.org/guides/[beginner-level Arquillian guides], at the very lea
 
 === Adding ShrinkWrap Resolvers
 
-We'll need to use an updated version of the ShrinkWrap Resolvers project, that is not provided by the existing `org.jboss.bom.eap:jboss-javaee-6.0-with-tools` BOM. Fortunately, the JBoss WFK project provides this for us. It provides us with the `shrinkwrap-resolver-depchain` module, which allows us to use ShrinkWrap resolvers in our project through a single dependency. We can bring in the required version of ShrinkWrap Resolvers, by merely using the `org.jboss.bom.wfk:jboss-javaee-6.0-with-tools` BOM instead of the pre-existing tools BOM from EAP:
+We'll need to use the ShrinkWrap Resolvers project, that is provided by the existing `org.jboss.bom.eap:jboss-javaee-7.0-eap-with-tools` BOM. It provides us with the `shrinkwrap-resolver-depchain` module, which allows us to use ShrinkWrap resolvers in our project through a single dependency:
 
 .pom.xml
 [source,xml]
 ---------------------------------------------------------------------------------
 <project ...>
     ...
-	<properties>
-		...
-		<version.jboss.bom.wfk>2.7.0-redhat-1</version.jboss.bom.wfk>
-		...
-	</properties>
-
-
-    <dependencyManagement>
-        ...
-
-        <dependency>
-            <groupId>org.jboss.bom.wfk</groupId>
-            <artifactId>jboss-javaee-6.0-with-resteasy</artifactId>
-            <version>${version.jboss.bom.wfk}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencyManagement>
-
-	...
 
     <dependencies>
         ...
@@ -1282,7 +1262,6 @@ We'll need to use an updated version of the ShrinkWrap Resolvers project, that i
 </project>
 ---------------------------------------------------------------------------------
 
-Remember to remove the original Tools BOM with the `org.jboss.bom.eap` groupId.
 
 === A Basic Deployment Class
 

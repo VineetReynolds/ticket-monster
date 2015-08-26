@@ -9,7 +9,7 @@ The target audience for this tutorial are those individuals who do not yet have 
 * Eclipse + JBoss Tools (JBoss Developer Studio)
 * JBoss Enterprise Application Platform 6.3
 * Java EE 6 features like JAX-RS 
-* HTML5 & jQuery for building an mobile web front-end.  
+* HTML5 & AngularJS for building an mobile web front-end.  
 
 This tutorial sets the stage for the creation of TicketMonster - our sample application that illustrates how to bring together the best features of *Java EE 6 + HTML5 + JBoss* to create a rich, mobile-optimized and dynamic application.
 
@@ -287,8 +287,8 @@ Under src you will find:
 `main/resources/META-INF/persistence.xml`::
     establishes that this project contains JPA entities and it identifies the datasource, which is deployed alongside the project. It also includes the `hibernate.hbm2dll.auto` property set to `create-drop` by default. 
 
-`test/java/test`::
-    provides the `.test` package that contains `MemberRegistrationTest.java`, an Arquillian based test that runs both from within JBoss Developer Studio via *Run As -> JUnit Test* and at the command line:
+`test/java`::
+    provides the `org.jboss.examples.ticketmonster.test` package that contains `MemberRegistrationTest.java`, an Arquillian based test that runs both from within JBoss Developer Studio via *Run As -> JUnit Test* and at the command line:
 +
 `mvn test –Parq-wildfly-remote`
 +
