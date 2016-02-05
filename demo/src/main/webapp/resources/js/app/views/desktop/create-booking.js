@@ -197,7 +197,8 @@ define([
                 success:function (booking) {
                     this.model = {}
                     $.getJSON(config.baseUrl +'rest/shows/performance/' + booking.performance.id, function (retrievedPerformance) {
-                        utilities.applyTemplate($(self.el), bookingConfirmationTemplate, {booking:booking, performance:retrievedPerformance })
+                        self.close();
+                        utilities.applyTemplate($(self.el), bookingConfirmationTemplate, {booking:booking, performance:retrievedPerformance });
                     });
                 }}).error(function (error) {
                     if (error.status == 400 || error.status == 409) {
@@ -286,8 +287,6 @@ define([
                 this.timerObject = setTimeout(function() {
                     self.watchForm();
                 }, this.intervalDuration);
-            } else {
-                this.onClose();
             }
         },
         onClose: function() {
@@ -296,6 +295,7 @@ define([
                 delete this.timerObject;
             }
             this.ticketCategoriesView.close();
+            this.ticketSummaryView.close();
         }
     });
 
